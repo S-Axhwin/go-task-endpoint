@@ -21,7 +21,6 @@ func main() {
 	defer db.Close()
 
 	queries := sqlc.New(db)
-
 	h := handlers.NewHandler(queries)
 
 	mux := http.NewServeMux()
@@ -30,6 +29,8 @@ func main() {
 
 	mux.HandleFunc("POST /auth/register", h.Register)
 	mux.HandleFunc("POST /auth/login", h.Login)
+	mux.HandleFunc("POST /auth/logout", h.Logout)
+
 	fmt.Println("Server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }

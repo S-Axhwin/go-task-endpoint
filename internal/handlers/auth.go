@@ -4,8 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/S-Axhwin/prac-02/internal/db/sqlc"
+	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -58,9 +61,21 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Came to logout")
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   false,
+		SameSite: http.SameSiteStrictMode,
+	})
+	fmt.Fprint(w, "Logged Out")
+}
+
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
-	//TODO: Impliment Login
-	ctx := r.Context()
 
 	var req struct {
 		Email    string `json:"email"`
@@ -70,17 +85,52 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain")
-		fmt.Fprint(w, "Invalid Input", http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
+	ctx := r.Context()
 	// get the user first
 	user, err := h.q.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain")
-		fmt.Fprint(w, "User didn exisits with mail", http.StatusBadRequest)
+		http.Error(w, err.Error()+" invalid input", http.StatusBadRequest)
 		return
 	}
-	bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password))
 
+	err = bcrypt.CompareHashAndPassword(
+		[]byte(user.PasswordHash),
+		[]byte(req.Password),
+	)
+
+	if err != nil {
+		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		return
+	}
+
+	claims := jwt.RegisteredClaims{
+		Subject:   user.Email,
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	signed, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
+	if err != nil {
+		w.Header().Set("Content-Type", "text/plain")
+		fmt.Fprint(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "access_token",
+		Value:    signed,
+		Path:     "/",
+		HttpOnly: true,
+		Secure:   false, // TODO: only for localhost false
+		SameSite: http.SameSiteStrictMode,
+		MaxAge:   3600,
+	})
+
+	w.WriteHeader(http.StatusOK)
 }
