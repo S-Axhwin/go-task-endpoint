@@ -31,6 +31,8 @@ func main() {
 	mux.HandleFunc("POST /auth/login", h.Login)
 	mux.HandleFunc("POST /auth/logout", h.Logout)
 
+	// Secure Routes
+
 	fmt.Println("Server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
 }
