@@ -25,14 +25,11 @@ func main() {
 	h := handlers.NewHandler(queries)
 
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("GET /health", h.HealthCheck)
+
 	mux.HandleFunc("POST /auth/register", h.Register)
-	mux.HandleFunc("GET /health", healthCheck)
+	mux.HandleFunc("POST /auth/login", h.Login)
 	fmt.Println("Server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
-}
-
-func healthCheck(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintln(w, "Server Running")
 }
