@@ -40,17 +40,27 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword(
+		[]byte(req.Password),
+		bcrypt.DefaultCost,
+	)
 
 	if err != nil {
-		http.Error(w, "Server Error", http.StatusInternalServerError)
+		http.Error(
+			w,
+			"Server Error",
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
-	user, err := h.q.CreateUser(ctx, sqlc.CreateUserParams{
-		Email:        req.Email,
-		PasswordHash: string(hash),
-	})
+	user, err := h.q.CreateUser(
+		ctx,
+		sqlc.CreateUserParams{
+			Email:        req.Email,
+			PasswordHash: string(hash),
+		},
+	)
 
 	if err != nil {
 		http.Error(w, "Email already exisits", http.StatusConflict)
@@ -90,7 +100,6 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := r.Context()
-	// get the user first
 	user, err := h.q.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain")

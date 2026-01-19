@@ -14,7 +14,10 @@ import (
 
 func main() {
 
-	db, err := store.NewPostgres(context.Background(), os.Getenv("DATABASE_URL"))
+	db, err := store.NewPostgres(
+		context.Background(),
+		os.Getenv("DATABASE_URL"),
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
