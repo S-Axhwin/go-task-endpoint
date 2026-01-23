@@ -9,6 +9,7 @@ import (
 
 	"github.com/S-Axhwin/prac-02/internal/db/sqlc"
 	"github.com/S-Axhwin/prac-02/internal/handlers"
+	"github.com/S-Axhwin/prac-02/internal/middleware"
 	"github.com/S-Axhwin/prac-02/internal/store"
 )
 
@@ -32,9 +33,21 @@ func main() {
 
 	mux.HandleFunc("POST /auth/register", h.Register)
 	mux.HandleFunc("POST /auth/login", h.Login)
-	mux.HandleFunc("POST /auth/logout", h.Logout)
 
-	// Secure Routes
+	//secure routes
+
+	mux.Handle(
+		"POST /auth/logout",
+		middleware.AuthMiddleware(http.HandlerFunc(h.Logout)),
+	)
+	mux.Handle(
+		"GET /tasks",
+		middleware.AuthMiddleware(http.HandlerFunc(h.GetTasks)),
+	)
+	mux.Handle(
+		"POST /tasks",
+		middleware.AuthMiddleware(http.HandlerFunc(h.CreateTasks)),
+	)
 
 	fmt.Println("Server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))

@@ -8,6 +8,7 @@ package sqlc
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -22,14 +23,14 @@ RETURNING id, email, created_at
 `
 
 type CreateUserParams struct {
-	Email        string
-	PasswordHash string
+	Email        string `json:"email"`
+	PasswordHash string `json:"password_hash"`
 }
 
 type CreateUserRow struct {
-	ID        pgtype.UUID
-	Email     string
-	CreatedAt pgtype.Timestamptz
+	ID        uuid.UUID          `json:"id"`
+	Email     string             `json:"email"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (CreateUserRow, error) {
@@ -71,12 +72,12 @@ WHERE id = $1
 `
 
 type GetUserByIDRow struct {
-	ID        pgtype.UUID
-	Email     string
-	CreatedAt pgtype.Timestamptz
+	ID        uuid.UUID          `json:"id"`
+	Email     string             `json:"email"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
-func (q *Queries) GetUserByID(ctx context.Context, id pgtype.UUID) (GetUserByIDRow, error) {
+func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (GetUserByIDRow, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
 	var i GetUserByIDRow
 	err := row.Scan(&i.ID, &i.Email, &i.CreatedAt)

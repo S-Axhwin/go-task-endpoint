@@ -8,6 +8,7 @@ package sqlc
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -22,8 +23,8 @@ RETURNING id, user_id, title, completed, created_at
 `
 
 type CreateTaskParams struct {
-	UserID pgtype.UUID
-	Title  string
+	UserID uuid.UUID `json:"user_id"`
+	Title  string    `json:"title"`
 }
 
 func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, error) {
@@ -44,7 +45,7 @@ DELETE FROM tasks
 WHERE id = $1
 `
 
-func (q *Queries) DeleteTask(ctx context.Context, id pgtype.UUID) error {
+func (q *Queries) DeleteTask(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteTask, id)
 	return err
 }
@@ -60,7 +61,7 @@ FROM tasks
 WHERE id = $1
 `
 
-func (q *Queries) GetTaskByID(ctx context.Context, id pgtype.UUID) (Task, error) {
+func (q *Queries) GetTaskByID(ctx context.Context, id uuid.UUID) (Task, error) {
 	row := q.db.QueryRow(ctx, getTaskByID, id)
 	var i Task
 	err := row.Scan(
@@ -85,19 +86,19 @@ ORDER BY created_at DESC
 `
 
 type ListTasksByUserRow struct {
-	ID        pgtype.UUID
-	Title     string
-	Completed bool
-	CreatedAt pgtype.Timestamptz
+	ID        uuid.UUID          `json:"id"`
+	Title     string             `json:"title"`
+	Completed bool               `json:"completed"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
-func (q *Queries) ListTasksByUser(ctx context.Context, userID pgtype.UUID) ([]ListTasksByUserRow, error) {
+func (q *Queries) ListTasksByUser(ctx context.Context, userID uuid.UUID) ([]ListTasksByUserRow, error) {
 	rows, err := q.db.Query(ctx, listTasksByUser, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListTasksByUserRow
+	items := []ListTasksByUserRow{}
 	for rows.Next() {
 		var i ListTasksByUserRow
 		if err := rows.Scan(
@@ -124,13 +125,13 @@ RETURNING id, completed
 `
 
 type UpdateTaskStatusParams struct {
-	ID        pgtype.UUID
-	Completed bool
+	ID        uuid.UUID `json:"id"`
+	Completed bool      `json:"completed"`
 }
 
 type UpdateTaskStatusRow struct {
-	ID        pgtype.UUID
-	Completed bool
+	ID        uuid.UUID `json:"id"`
+	Completed bool      `json:"completed"`
 }
 
 func (q *Queries) UpdateTaskStatus(ctx context.Context, arg UpdateTaskStatusParams) (UpdateTaskStatusRow, error) {

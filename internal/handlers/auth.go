@@ -118,7 +118,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	claims := jwt.RegisteredClaims{
-		Subject:   user.Email,
+		Subject:   user.ID.String(),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 	}
 
@@ -138,8 +138,8 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		Secure:   false, // TODO: only for localhost false
 		SameSite: http.SameSiteStrictMode,
-		MaxAge:   3600,
 	})
 
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("token set"))
 }

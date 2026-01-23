@@ -5,20 +5,21 @@
 package sqlc
 
 import (
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Task struct {
-	ID        pgtype.UUID
-	UserID    pgtype.UUID
-	Title     string
-	Completed bool
-	CreatedAt pgtype.Timestamptz
+	ID        uuid.UUID          `json:"id"`
+	UserID    uuid.UUID          `json:"user_id"`
+	Title     string             `json:"title"`
+	Completed bool               `json:"completed"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
 }
 
 type User struct {
-	ID           pgtype.UUID
-	Email        string
-	PasswordHash string
-	CreatedAt    pgtype.Timestamptz
+	ID           uuid.UUID          `json:"id"`
+	Email        string             `json:"email"`
+	PasswordHash string             `json:"password_hash"`
+	CreatedAt    pgtype.Timestamptz `json:"created_at"`
 }
