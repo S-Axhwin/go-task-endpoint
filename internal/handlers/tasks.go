@@ -33,7 +33,6 @@ func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) CreateTasks(w http.ResponseWriter, r *http.Request) {
-
 	userIDRaw := r.Context().Value(middleware.UserIdKey)
 	userIDStr, ok := userIDRaw.(string)
 	if !ok {

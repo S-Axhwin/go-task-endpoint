@@ -35,19 +35,13 @@ func main() {
 	mux.HandleFunc("POST /auth/login", h.Login)
 
 	//secure routes
+	auth := func(hf http.HandlerFunc) http.Handler {
+		return middleware.AuthMiddleware(hf)
+	}
 
-	mux.Handle(
-		"POST /auth/logout",
-		middleware.AuthMiddleware(http.HandlerFunc(h.Logout)),
-	)
-	mux.Handle(
-		"GET /tasks",
-		middleware.AuthMiddleware(http.HandlerFunc(h.GetTasks)),
-	)
-	mux.Handle(
-		"POST /tasks",
-		middleware.AuthMiddleware(http.HandlerFunc(h.CreateTasks)),
-	)
+	mux.Handle("POST /auth/logout", auth(h.Logout))
+	mux.Handle("GET /tasks", auth((h.GetTasks)))
+	mux.Handle("POST /tasks", auth((h.CreateTasks)))
 
 	fmt.Println("Server running on :8080")
 	log.Fatal(http.ListenAndServe(":8080", mux))
