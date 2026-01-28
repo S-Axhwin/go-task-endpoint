@@ -27,7 +27,7 @@ func (h *Handler) GetTasks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tasks, err := h.q.ListTasksByUser(r.Context(), userUUID)
-
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(tasks)
 
 }
