@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-
 	db, err := store.NewPostgres(
 		context.Background(),
 		os.Getenv("DATABASE_URL"),
